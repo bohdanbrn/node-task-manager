@@ -13,13 +13,33 @@ router.post("/dashboard/add-task", checkAuth, async (req, res) => {
         owner: req.user._id
     });
 
+    let result = {
+        errors: [],
+        success_msg: "",
+        task: {}
+    };
+
     try {
         await task.save();
-        res.status(201).send(task);
+
+        result.success_msg = "Task successfully created";
+
+        res.render("add-task", result);
     } catch (e) {
-        res.status(400).send(e);
+        if (e.errors && e.name == "ValidationError") {
+            for (let key in e.errors) {
+                result.errors.push({
+                    msg: e.errors[key].message
+                });
+            }
+            result.task.title = req.body.title;
+            result.task.description = req.body.description;
+
+            res.render("add-task", result);
+        } else {
+            res.status(400).send(e);
+        }
     }
 });
-
 
 module.exports = router;

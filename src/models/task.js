@@ -4,11 +4,11 @@ const TastSchema = new mongoose.Schema({
     title: {
         type: String,
         require: true,
+        minlength: 1,
         trim: true
     },
     description: {
         type: String,
-        require: true,
         trim: true
     },
     completed: {
