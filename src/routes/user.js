@@ -94,7 +94,7 @@ router.post('/register', (req, res) => {
                             // Save user
                             newUser.save()
                                 .then(user => {
-                                    req.flash('success_msg', 'You are now registered and can log in');
+                                    req.flash('successMsg', 'You are now registered and can log in');
                                     res.redirect('/login');
                                 })
                                 .catch(err => console.log(err));
@@ -107,7 +107,7 @@ router.post('/register', (req, res) => {
 // Logout
 router.get('/logout', (req, res) => {
     req.logout();
-    req.flash('success_msg', 'You are logged out');
+    req.flash('successMsg', 'You are logged out');
     res.redirect('/login');
 });
 

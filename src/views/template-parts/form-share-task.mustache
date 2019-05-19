@@ -1,0 +1,36 @@
+<div class="modal fade" id="modalShareForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="/dashboard/share-task" method="POST">
+                <div class="modal-header text-center">
+                    <h4 class="modal-title w-100 font-weight-bold">Share task</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body mx-3">
+                    <div class="md-form">
+                        <label for="shareUsers">Select users to share</label>
+                        <select multiple="" id="shareUsers" class="form-control" name="shareUsers">
+                            <option value="1">User 1</option>
+                            <option value="2">User 2</option>
+                            <option value="3">User 3</option>
+                            <option value="4">User 4</option>
+                            <option value="5">User 5</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="p-3 d-flex justify-content-end">
+                    <button class="btn btn-success">Share</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="text-center">
+    <a href="" class="btn btn-secondary btn-rounded mb-4" data-toggle="modal" data-target="#modalShareForm">Share task</a>
+</div>

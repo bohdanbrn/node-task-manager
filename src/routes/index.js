@@ -3,7 +3,7 @@ const router = express.Router();
 const checkAuth = require("../middleware/auth");
 
 // Welcome Page
-router.get("/", (req, res) => res.render("welcome"));
+router.get("/", (req, res) => res.render("index"));
 
 // Dashboard
 router.get("/dashboard", checkAuth, (req, res) =>

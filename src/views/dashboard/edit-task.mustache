@@ -1,0 +1,57 @@
+{{> ./template-parts/header}}
+
+{{> ./template-parts/navigation}}
+
+<div class="container">
+
+    <form action="/dashboard/edit-task/{{task._id}}" method="POST">
+        <input type="hidden" name="_id" value="{{task._id}}">
+        <input type="hidden" name="createdAt" value="{{task.createdAt}}">
+        <input type="hidden" name="updatedAt" value="{{task.updatedAt}}">
+
+        <h1 class="mt-4">Edit task</h1>
+
+        {{> ./partials/messages}}
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <label for="taskTitle" class="col-form-label">Title</label>
+                    <input type="text" id="taskTitle" class="form-control" name="title" value="{{task.title}}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDescription">Description</label>
+                    <textarea id="taskDescription" class="form-control" name="description"
+                        rows="4">{{task.description}}</textarea>
+                </div>
+            </div>
+
+            <div class="col-lg-4 offset-lg-1">
+                <div class="taskDate">
+                    <fieldset disabled="">
+                        <label class="control-label" for="taskPublishDate">Publish date</label>
+                        <input id="taskPublishDate" class="form-control" type="text" value="{{task.createdAtFormat}}" disabled="">
+
+                        <label class="control-label mt-2" for="taskModifiedDate">Last modified date</label>
+                        <input id="taskModifiedDate" class="form-control" type="text" value="{{task.updatedAtFormat}}" disabled="">
+                    </fieldset>
+                </div>
+                <div class="task-status mt-2">
+                    <label for="taskStatus">Status</label>
+                    <select id="taskStatus" class="form-control" name="status">
+                        {{#task.statusOptions}}
+                            <option value="{{value}}" {{#selected}}selected="selected"{{/selected}}>{{text}}</option>
+                        {{/task.statusOptions}}
+                    </select>
+                </div>
+                <div class="mt-2">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+{{> ./template-parts/footer}}

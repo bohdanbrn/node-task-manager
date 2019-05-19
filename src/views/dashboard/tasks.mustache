@@ -5,7 +5,34 @@
 <div class="container">
 
     <h1 class="mt-4">Task list</h1>
-    {{> ./template-parts/task-list}}
+
+    <div class="task-list">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Task</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Created date</th>
+                    <th scope="col">Owner</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#tasks}}
+                    <tr class="table-light">
+                        <th scope="row">{{title}}</th>
+                        <td>{{status}}</td>
+                        <td>{{createdAtFormat}}</td>
+                        <td>{{owner}}</td>
+                        <td>
+                            <a href="/dashboard/edit-task/{{_id}}" class="btn btn-info">Edit</a>
+                            <a href="/dashboard/delete-task/{{_id}}"class="btn btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                {{/tasks}}
+            </tbody>
+        </table>
+    </div>
     
 </div>
 

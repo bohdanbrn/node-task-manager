@@ -1,28 +1,85 @@
 const express = require("express");
+const moment = require("moment");
 const Task = require("../models/task");
 const checkAuth = require("../middleware/auth");
 const router = new express.Router();
+
+// TODO
+// GET /tasks?completed=true
+// GET /tasks?limit=10&skip=20
+// GET /tasks?sortBy=createdAt:desc
+router.get("/dashboard/tasks", checkAuth, async (req, res) => {
+    try {
+        const match = {
+            completed: "in proggress"
+        };
+        const sort = {};
+        const result = {
+            tasks: []
+        };
+
+        if (req.query.completed) {
+            const availableStatuses = ["in proggress", "completed"];
+
+            if (availableStatuses.indexOf(req.query.completed)) {
+                match.completed = req.query.completed;
+            }
+        }
+
+        if (req.query.sortBy) {
+            const parts = req.query.sortBy.split(":");
+            sort[parts[0]] = parts[1] === "desc" ? -1 : 1;
+        }
+
+        const tasks = await Task.find({
+            owner: req.user._id
+        });
+
+        if (!tasks) {
+            throw new Error("Tasks not found");
+        }
+
+        for (let key in tasks) {
+            const owner = await Task.getTaskOwner(tasks[key], req.user._id);
+            const createdDate = moment(tasks[key].createdAt);
+
+            result.tasks.push({
+                _id: tasks[key]._id,
+                title: tasks[key].title,
+                status: tasks[key].status,
+                createdAtFormat: createdDate.format("DD MMMM YYYY - HH:mm"),
+                owner: owner
+            });
+        }
+
+        res.render("dashboard/tasks", result);
+    } catch (e) {
+        res.status(404).send();
+    }
+});
 
 router.get("/dashboard/add-task", checkAuth, (req, res) =>
     res.render("dashboard/add-task")
 );
 
 router.post("/dashboard/add-task", checkAuth, async (req, res) => {
-    const task = new Task({
-        ...req.body,
-        owner: req.user._id
-    });
-
-    let result = {
+    const result = {
         errors: [],
-        success_msg: "",
+        successMsg: "",
         task: {}
     };
 
     try {
+        // get only allowed fields
+        const task = new Task({
+            title: req.body.title,
+            description: req.body.description,
+            owner: req.user._id
+        });
+
         await task.save();
 
-        result.success_msg = "Task successfully created";
+        result.successMsg = "Task successfully created";
 
         res.render("dashboard/add-task", result);
     } catch (e) {
@@ -37,59 +94,65 @@ router.post("/dashboard/add-task", checkAuth, async (req, res) => {
 
             res.render("dashboard/add-task", result);
         } else {
-            res.status(400).send(e);
+            res.status(404).send();
         }
     }
 });
 
-// GET /tasks?completed=true
-// GET /tasks?limit=10&skip=20
-// GET /tasks?sortBy=createdAt:desc
-router.get("/dashboard/tasks", checkAuth, async (req, res) => {
-    const match = {
-        completed: "in proggress"
-    };
-    const sort = {};
+router.get("/dashboard/edit-task/:taskId", checkAuth, async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        const task = await Task.findById(taskId);
+
+        const createdDate = moment(task.createdAt);
+        const updatedDate = moment(task.updatedAt);
+
+        res.render("dashboard/edit-task", {
+            task: Task.getRenderData(task)
+        });
+    } catch (e) {
+        res.status(404).send();
+    }
+});
+
+router.post("/dashboard/edit-task/:taskId", checkAuth, async (req, res) => {
     const result = {
-        tasks: []
+        errors: [],
+        successMsg: "",
+        task: {}
     };
 
-    if (req.query.completed) {
-        const availableStatuses = ["in proggress", "completed"];
-
-        if (availableStatuses.indexOf(req.query.completed)) {
-            match.completed = req.query.completed;
-        }
-    }
-
-    if (req.query.sortBy) {
-        const parts = req.query.sortBy.split(":");
-        sort[parts[0]] = parts[1] === "desc" ? -1 : 1;
-    }
+    const taskId = req.params.taskId;
 
     try {
-        const tasks = await Task.find({
-            owner: req.user._id
-        });
+        const task = await Task.findById(taskId);
 
-        if (!tasks) {
-            throw new Error("Tasks not found");
-        }
+        // get only allowed fields
+        task.title = req.body.title;
+        task.description = req.body.description;
+        task.status = req.body.status;
 
-        for (let key in tasks) {
-            let owner = await Task.getTaskOwner(tasks[key], req.user._id);
+        await task.save();
 
-            result.tasks.push({
-                title: tasks[key].title,
-                status: tasks[key].status,
-                createdAt: tasks[key].createdAt,
-                owner: owner
-            });
-        }
+        result.task = Task.getRenderData(task);
 
-        res.render("dashboard/tasks", result);
+        result.successMsg = "Task successfully edited";
+
+        res.render("dashboard/edit-task", result);
     } catch (e) {
-        res.status(400).send(e);
+        if (e.errors && e.name == "ValidationError") {
+            for (let key in e.errors) {
+                result.errors.push({
+                    msg: e.errors[key].message
+                });
+            }
+
+            result.task = Task.getRenderData(req.body);
+
+            res.render("dashboard/edit-task", result);
+        } else {
+            res.status(404).send();
+        }
     }
 });
 
