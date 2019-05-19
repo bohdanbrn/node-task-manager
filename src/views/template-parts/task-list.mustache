@@ -3,42 +3,20 @@
         <thead>
             <tr>
                 <th scope="col">Task</th>
-                <th scope="col">Column heading</th>
-                <th scope="col">Column heading</th>
-                <th scope="col">Column heading</th>
+                <th scope="col">Status</th>
+                <th scope="col">Created date</th>
+                <th scope="col">Owner</th>
             </tr>
         </thead>
         <tbody>
-            <tr class="table-light">
-                <th scope="row">Light</th>
-                <td>Column content</td>
-                <td>Column content</td>
-                <td>Column content</td>
-            </tr>
-            <tr class="table-light">
-                <th scope="row">Light</th>
-                <td>Column content</td>
-                <td>Column content</td>
-                <td>Column content</td>
-            </tr>
-            <tr class="table-light">
-                <th scope="row">Light</th>
-                <td>Column content</td>
-                <td>Column content</td>
-                <td>Column content</td>
-            </tr>
-            <tr class="table-light">
-                <th scope="row">Light</th>
-                <td>Column content</td>
-                <td>Column content</td>
-                <td>Column content</td>
-            </tr>
-            <tr class="table-light">
-                <th scope="row">Light</th>
-                <td>Column content</td>
-                <td>Column content</td>
-                <td>Column content</td>
-            </tr>
+            {{#tasks}}
+                <tr class="table-light">
+                    <th scope="row">{{title}}</th>
+                    <td>{{status}}</td>
+                    <td>{{createdAt}}</td>
+                    <td>{{owner}}</td>
+                </tr>
+            {{/tasks}}
         </tbody>
     </table>
 </div>

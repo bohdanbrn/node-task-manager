@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
+const User = require('../models/User');
 
-const TastSchema = new mongoose.Schema({
+const taskSchema = new mongoose.Schema({
     title: {
         type: String,
         require: true,
@@ -11,9 +12,10 @@ const TastSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    completed: {
-        type: Boolean,
-        default: false
+    status: {
+        type: String,
+        enum: ['in proggress', 'completed'],
+        default: 'in proggress'
     },
     completedDate: {
         type: Date,
@@ -27,6 +29,28 @@ const TastSchema = new mongoose.Schema({
     timestamps: true
 });
 
-const Task = mongoose.model("Task", TastSchema);
+/**
+ * Get task oener by userId
+ * @param {object} task 
+ * @param {ObjectId} userId 
+ */
+taskSchema.statics.getTaskOwner = async function (task, userId) {
+    if (task.owner.equals(userId)) {
+        return "You";
+    }
+    else {
+        let taskOwner = await User.findOne({
+            _id: task.owner
+        });
+
+        if (!taskOwner) {
+            throw new Error('Owner not found');
+        }
+
+        return taskOwner.name;
+    }
+}
+
+const Task = mongoose.model("Task", taskSchema);
 
 module.exports = Task;
