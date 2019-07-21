@@ -8,13 +8,14 @@ const router = new express.Router();
 // GET /tasks?completed=true
 // GET /tasks?limit=10&skip=20
 // GET /tasks?sortBy=createdAt:desc
-router.get("/dashboard/tasks", checkAuth, async (req, res) => {
+router.get("/dashboard", checkAuth, async (req, res) => {
     try {
         const match = {
             completed: "in proggress"
         };
         const sort = {};
         const result = {
+            user: req.user,
             tasks: []
         };
 
@@ -59,11 +60,14 @@ router.get("/dashboard/tasks", checkAuth, async (req, res) => {
 });
 
 router.get("/dashboard/add-task", checkAuth, (req, res) =>
-    res.render("dashboard/add-task")
+    res.render("dashboard/add-task", {
+        user: req.user
+    })
 );
 
 router.post("/dashboard/add-task", checkAuth, async (req, res) => {
     const result = {
+        user: req.user,
         errors: [],
         successMsg: "",
         task: {}
@@ -108,6 +112,7 @@ router.get("/dashboard/edit-task/:taskId", checkAuth, async (req, res) => {
         const updatedDate = moment(task.updatedAt);
 
         res.render("dashboard/edit-task", {
+            user: req.user,
             task: Task.getRenderData(task)
         });
     } catch (e) {
@@ -117,6 +122,7 @@ router.get("/dashboard/edit-task/:taskId", checkAuth, async (req, res) => {
 
 router.post("/dashboard/edit-task/:taskId", checkAuth, async (req, res) => {
     const result = {
+        user: req.user,
         errors: [],
         successMsg: "",
         task: {}

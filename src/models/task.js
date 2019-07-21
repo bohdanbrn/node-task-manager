@@ -21,7 +21,7 @@ const taskSchema = new mongoose.Schema(
         },
         completedDate: {
             type: Date,
-            default: 0000 - 00 - 00
+            default: null
         },
         owner: {
             type: mongoose.Schema.Types.ObjectId,
