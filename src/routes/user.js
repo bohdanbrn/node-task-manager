@@ -1,28 +1,28 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const passport = require('passport');
+const bcrypt = require("bcryptjs");
+const passport = require("passport");
 
 // User model
-const User = require('../models/User');
+const User = require("../models/user");
 
 // Login Page
-router.get('/login', (req, res) => res.render('login'));
+router.get("/login", (req, res) => res.render("login"));
 
 // Login Handle
-router.post('/login', (req, res, next) => {
-    passport.authenticate('local', {
-        successRedirect: '/dashboard',
-        failureRedirect: '/login',
+router.post("/login", (req, res, next) => {
+    passport.authenticate("local", {
+        successRedirect: "/dashboard",
+        failureRedirect: "/login",
         failureFlash: true
     })(req, res, next);
 });
 
 // Register Page
-router.get('/register', (req, res) => res.render('register'));
+router.get("/register", (req, res) => res.render("register"));
 
 // Register Handle
-router.post('/register', (req, res) => {
+router.post("/register", (req, res) => {
     const {
         name,
         email,
@@ -34,26 +34,26 @@ router.post('/register', (req, res) => {
     // Chack required fields
     if (!name || !email || !password || !password2) {
         errors.push({
-            msg: 'Please fill in all fields'
+            msg: "Please fill in all fields"
         });
     }
 
     // Check passwords match
     if (password !== password2) {
         errors.push({
-            msg: 'Passwords do not match'
+            msg: "Passwords do not match"
         });
     }
 
     // Check pass length
     if (password.length < 6) {
         errors.push({
-            msg: 'Password should be at least 6 characters'
+            msg: "Password should be at least 6 characters"
         });
     }
 
     if (errors.length > 0) {
-        res.render('register', {
+        res.render("register", {
             errors,
             name,
             email,
@@ -63,15 +63,15 @@ router.post('/register', (req, res) => {
     } else {
         // Validation passed
         User.findOne({
-                email: email
-            })
+            email: email
+        })
             .then((user) => {
                 if (user) {
                     // User exists
                     errors.push({
-                        msg: 'Email is already registered'
+                        msg: "Email is already registered"
                     });
-                    res.render('register', {
+                    res.render("register", {
                         errors,
                         name,
                         email,
@@ -94,8 +94,8 @@ router.post('/register', (req, res) => {
                             // Save user
                             newUser.save()
                                 .then(user => {
-                                    req.flash('successMsg', 'You are now registered and can log in');
-                                    res.redirect('/login');
+                                    req.flash("successMsg", "You are now registered and can log in");
+                                    res.redirect("/login");
                                 })
                                 .catch(err => console.log(err));
                         }));
@@ -105,10 +105,10 @@ router.post('/register', (req, res) => {
 });
 
 // Logout
-router.get('/logout', (req, res) => {
+router.get("/logout", (req, res) => {
     req.logout();
-    req.flash('successMsg', 'You are logged out');
-    res.redirect('/login');
+    req.flash("successMsg", "You are logged out");
+    res.redirect("/login");
 });
 
 module.exports = router;

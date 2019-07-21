@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const moment = require("moment");
-const User = require("../models/User");
+const User = require("../models/user");
 
 const taskSchema = new mongoose.Schema(
     {
@@ -88,7 +88,7 @@ function getStatusOptions(selected) {
     options[selectedIndex].selected = true;
 
     return options;
-};
+}
 
 const Task = mongoose.model("Task", taskSchema);
 
