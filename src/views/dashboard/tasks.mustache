@@ -21,10 +21,10 @@
                         <th scope="row">{{title}}</th>
                         <td>{{status}}</td>
                         <td>{{createdAtFormat}}</td>
-                        <td>{{owner}}</td>
+                        <td>{{owner.name}}</td>
                         <td>
-                            <a href="/dashboard/edit-task/{{_id}}" class="btn btn-info">Edit</a>
-                            <a href="/dashboard/delete-task/{{_id}}"class="btn btn-danger">Delete</a>
+                            <a href="/dashboard/tasks/edit/{{_id}}" class="btn btn-success">Edit</a>
+                            <a href="/dashboard/tasks/delete/{{_id}}"class="btn btn-danger">Delete</a>
                         </td>
                     </tr>
                 {{/tasks}}

@@ -1,7 +1,9 @@
 const express = require("express");
 const moment = require("moment");
+const User = require("../models/user");
 const Task = require("../models/task");
 const checkAuth = require("../middleware/auth");
+const { taskPermissions } = require("../middleware/permissions");
 const router = new express.Router();
 
 // TODO
@@ -9,15 +11,18 @@ const router = new express.Router();
 // GET /tasks?limit=10&skip=20
 // GET /tasks?sortBy=createdAt:desc
 router.get("/dashboard", checkAuth, async (req, res) => {
+    const result = {
+        user: req.user,
+        tasks: [],
+        successMsg: "",
+        errors: []
+    };
+
     try {
         const match = {
             completed: "in proggress"
         };
         const sort = {};
-        const result = {
-            user: req.user,
-            tasks: []
-        };
 
         if (req.query.completed) {
             const availableStatuses = ["in proggress", "completed"];
@@ -32,45 +37,46 @@ router.get("/dashboard", checkAuth, async (req, res) => {
             sort[parts[0]] = parts[1] === "desc" ? -1 : 1;
         }
 
-        const tasks = await Task.find({
-            owner: req.user._id
-        });
+        const tasks = await Task
+            .find({ $or: [{ owner: { $eq: req.user._id } }, { sharedUsers: { $eq: req.user._id } }] })
+            .lean()
+            .populate("owner", "name email")
+            .populate("sharedUsers", "name email");
 
         if (!tasks) {
-            throw new Error("Tasks not found");
+            throw new Error("Tasks not found!");
         }
 
         for (let key in tasks) {
-            const owner = await Task.getTaskOwner(tasks[key], req.user._id);
-            const createdDate = moment(tasks[key].createdAt);
-
-            result.tasks.push({
-                _id: tasks[key]._id,
-                title: tasks[key].title,
-                status: tasks[key].status,
-                createdAtFormat: createdDate.format("DD MMMM YYYY - HH:mm"),
-                owner: owner
-            });
+            if (tasks[key].owner._id.equals(req.user._id)) {
+                tasks[key].owner.name = "You";
+            }
+            const createdAt = moment(tasks[key].createdAt);
+            tasks[key].createdAtFormat = createdAt.format("DD MMMM YYYY - HH:mm");
         }
+        result.tasks = tasks;
 
         res.render("dashboard/tasks", result);
     } catch (e) {
-        res.status(404).send();
+        result.errorMsg = "Something went wrong!";
+        result.devError = e;
+
+        res.render("dashboard/edit-task", result);
     }
 });
 
-router.get("/dashboard/add-task", checkAuth, (req, res) =>
+router.get("/dashboard/tasks/create", checkAuth, (req, res) =>
     res.render("dashboard/add-task", {
         user: req.user
     })
 );
 
-router.post("/dashboard/add-task", checkAuth, async (req, res) => {
+router.post("/dashboard/tasks/create", checkAuth, async (req, res) => {
     const result = {
         user: req.user,
-        errors: [],
+        task: {},
         successMsg: "",
-        task: {}
+        errors: []
     };
 
     try {
@@ -89,51 +95,57 @@ router.post("/dashboard/add-task", checkAuth, async (req, res) => {
     } catch (e) {
         if (e.errors && e.name == "ValidationError") {
             for (let key in e.errors) {
-                result.errors.push({
-                    msg: e.errors[key].message
-                });
+                result.errors.push(e.errors[key].message);
             }
             result.task.title = req.body.title;
             result.task.description = req.body.description;
 
             res.render("dashboard/add-task", result);
         } else {
-            res.status(404).send();
+            result.errorMsg = "Something went wrong!";
+            result.devError = e;
+
+            res.render("dashboard/edit-task", result);
         }
     }
 });
 
-router.get("/dashboard/edit-task/:taskId", checkAuth, async (req, res) => {
+router.get("/dashboard/tasks/edit/:taskId", [checkAuth, taskPermissions], async (req, res) => {
+    const result = {
+        user: req.user,
+        task: {},
+        shareUsers: [],
+        successMsg: "",
+        errors: []
+    };
+
     try {
-        const taskId = req.params.taskId;
-        const task = await Task.findById(taskId);
+        const task = req.task;
 
-        const createdDate = moment(task.createdAt);
-        const updatedDate = moment(task.updatedAt);
+        result.task = Task.getRenderData(task);
+        result.shareUsers = await User.find().where("_id").ne(req.user._id);
 
-        res.render("dashboard/edit-task", {
-            user: req.user,
-            task: Task.getRenderData(task)
-        });
+        res.render("dashboard/edit-task", result);
     } catch (e) {
-        res.status(404).send();
+        result.errorMsg = "Something went wrong!";
+        result.devError = e;
+
+        res.render("dashboard/edit-task", result);
     }
 });
 
-router.post("/dashboard/edit-task/:taskId", checkAuth, async (req, res) => {
+router.post("/dashboard/tasks/edit/:taskId", [checkAuth, taskPermissions], async (req, res) => {
     const result = {
         user: req.user,
-        errors: [],
+        task: {},
         successMsg: "",
-        task: {}
+        errors: []
     };
 
-    const taskId = req.params.taskId;
-
     try {
-        const task = await Task.findById(taskId);
+        const task = req.task;
 
-        // get only allowed fields
+        // edit only allowed fields
         task.title = req.body.title;
         task.description = req.body.description;
         task.status = req.body.status;
@@ -141,24 +153,63 @@ router.post("/dashboard/edit-task/:taskId", checkAuth, async (req, res) => {
         await task.save();
 
         result.task = Task.getRenderData(task);
-
         result.successMsg = "Task successfully edited";
 
         res.render("dashboard/edit-task", result);
     } catch (e) {
         if (e.errors && e.name == "ValidationError") {
             for (let key in e.errors) {
-                result.errors.push({
-                    msg: e.errors[key].message
-                });
+                result.errors.push(e.errors[key].message);
             }
 
             result.task = Task.getRenderData(req.body);
 
             res.render("dashboard/edit-task", result);
         } else {
-            res.status(404).send();
+            result.errorMsg = "Something went wrong!";
+            result.devError = e;
+
+            res.render("dashboard/edit-task", result);
         }
+    }
+});
+
+router.post("/dashboard/tasks/share/:taskId", [checkAuth, taskPermissions], async (req, res) => {
+    const result = {
+        user: req.user,
+        task: {},
+        successMsg: "",
+        errors: []
+    };
+
+    try {
+        const task = req.task;
+        const memberEmail = req.body.memberEmail;
+        
+        const member = await User.findOne({
+            email: memberEmail
+        });
+        if (!member) throw new Error(`User with email ${memberEmail} is not found!`);
+
+        // check if user is already member of this task
+        const isMember = task.isMember(member._id);
+
+        // add member
+        if (!isMember) {
+            task.sharedUsers.push(member);
+
+            await task.save();
+        }
+
+        result.task = Task.getRenderData(task);
+        result.successMsg = `Task successfully shared with ${member.email}!`;
+
+        res.render("dashboard/edit-task", result);
+    } catch (e) {
+        result.errorMsg = "Something went wrong!";
+        result.devError = e;
+
+        res.render("dashboard/edit-task", result);
     }
 });
 

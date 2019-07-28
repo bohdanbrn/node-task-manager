@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const moment = require("moment");
-const User = require("../models/user");
 
 const taskSchema = new mongoose.Schema(
     {
@@ -25,40 +24,38 @@ const taskSchema = new mongoose.Schema(
         },
         owner: {
             type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
             required: true
-        }
-    },
-    {
+        },
+        sharedUsers: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            // required: true
+        }]
+    }, {
         timestamps: true
     }
 );
 
 /**
- * Get task oener by userId
- * @param {object} task
+ * Check if task is already shared with user
  * @param {ObjectId} userId
  */
-taskSchema.statics.getTaskOwner = async function(task, userId) {
-    if (task.owner.equals(userId)) {
-        return "You";
-    } else {
-        let taskOwner = await User.findOne({
-            _id: task.owner
-        });
+taskSchema.methods.isMember = function (memberId) {
+    const task = this;
 
-        if (!taskOwner) {
-            throw new Error("Owner not found");
-        }
-
-        return taskOwner.name;
+    if (task.sharedUsers) {
+        return task.sharedUsers.some(userId => userId.equals(memberId));
     }
+
+    return false;
 };
 
 /**
- * Get task information needed for /edit-task page
+ * Get task information needed for /tasks/add page
  * @param {object} task
  */
-taskSchema.statics.getRenderData = function(task) {
+taskSchema.statics.getRenderData = function (task) {
     const createdDate = moment(task.createdAt);
     const updatedDate = moment(task.updatedAt);
 

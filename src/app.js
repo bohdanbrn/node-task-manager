@@ -12,11 +12,11 @@ const app = express();
 require("./config/passport.js")(passport);
 
 // DB config
-const db = require("./config/keys.js").MongoURI;
+const MongoURI = process.env.MongoURI;
 
 // Connect to Mongo
 mongoose
-    .connect(db, {
+    .connect(MongoURI, {
         useNewUrlParser: true,
         useCreateIndex: true
     })
@@ -56,8 +56,7 @@ app.use(flash());
 // Global Vars
 app.use((req, res, next) => {
     res.locals.successMsg = req.flash("successMsg");
-    res.locals.error_msg = req.flash("error_msg");
-    res.locals.error = req.flash("error");
+    res.locals.errorMsg = req.flash("errorMsg");
     next();
 });
 
