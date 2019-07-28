@@ -1,4 +1,4 @@
+data/
 node_modules/
 *.DS_Store
 __MACOSX/
-src/config/keys.js

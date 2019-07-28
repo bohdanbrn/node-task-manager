@@ -1,10 +1,8 @@
 # node-aggregated-statistics
 
-A simple Node.js application for task managing, built on Express.js and MongoDB.
+A simple Node.js application for task management, built on Express.js and MongoDB.
 
 ## Getting Started
-
-To get started, in src/config/ directory, you need to create a config file "keys.js", based on default-keys.js. Configure them in accordance with your environment.
 
 **Install dependency modules**
 
@@ -15,11 +13,9 @@ npm install
 **Running app**
 
 ```
-npm start
+docker-compose up
 ```
 
-**Running dev**
-
-```
-npm run dev
-```
+After this command will be started:
+ - Application (http://localhost:3000)
+ - Admin interface for MongoDB (http://localhost:8081)
