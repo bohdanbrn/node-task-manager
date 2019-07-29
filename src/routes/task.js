@@ -213,4 +213,18 @@ router.post("/dashboard/tasks/share/:taskId", [checkAuth, taskPermissions], asyn
     }
 });
 
+router.post("/dashboard/tasks/delete/:taskId", [checkAuth, taskPermissions], async (req, res) => {
+    try {
+        const task = req.task;
+        await task.remove();
+
+        req.flash("successMsg", "Task successfully deleted");
+        res.redirect("/dashboard");
+
+    } catch (e) {
+        req.flash("successMsg", "Something went wrong!");
+        res.redirect("/dashboard");
+    }
+});
+
 module.exports = router;

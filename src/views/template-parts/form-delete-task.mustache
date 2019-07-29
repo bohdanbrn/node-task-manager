@@ -1,0 +1,24 @@
+{{#task._id}}
+<div class="modal fade" id="deleteTaskModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="/dashboard/tasks/delete/{{task._id}}" method="POST">
+                <div class="modal-header text-center">
+                    <h4 class="modal-title w-100 font-weight-bold">Are you sure you want to delete the task?</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="p-3 d-flex flex-row-reverse">
+                    <div>
+                        <button class="btn btn-danger">Delete</button>
+                        <button class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{/task._id}}

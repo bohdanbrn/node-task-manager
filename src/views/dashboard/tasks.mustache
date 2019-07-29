@@ -3,6 +3,7 @@
 <div class="container">
 
     <h1 class="mt-4">Task list</h1>
+    {{> ./template-parts/messages}}
 
     <div class="task-list">
         <table class="table table-hover">
@@ -24,7 +25,6 @@
                         <td>{{owner.name}}</td>
                         <td>
                             <a href="/dashboard/tasks/edit/{{_id}}" class="btn btn-success">Edit</a>
-                            <a href="/dashboard/tasks/delete/{{_id}}"class="btn btn-danger">Delete</a>
                         </td>
                     </tr>
                 {{/tasks}}
