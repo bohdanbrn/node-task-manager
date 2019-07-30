@@ -65,6 +65,23 @@ app.use("/", require("./routes/index.js"));
 app.use("/", require("./routes/user.js"));
 app.use("/", require("./routes/task.js"));
 
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+    const err = new Error("Page not Found");
+    err.statusCode = 404;
+    next(err);
+});
+
+// error handler
+app.use(function(err, req, res, next) {
+    res.status(err.statusCode || 500);
+    res.render("error", {
+        statusCode: res.statusCode,
+        error: err.message,
+        errorDev: (app.get("env") === "development") ? err : {}
+    });
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
