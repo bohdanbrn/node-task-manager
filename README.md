@@ -1,4 +1,4 @@
-# node-aggregated-statistics
+# node-task-manager
 
 A simple Node.js application for task management, built on Express.js and MongoDB.
 
